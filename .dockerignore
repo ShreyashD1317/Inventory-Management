@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+coverage
+.git
+.gitignore
+README.md
+.env
+.env.local
+docker-compose.yml
+Jenkinsfile
+*.md
+.vscode
+.idea
+build-artifacts
+.scannerwork
+*-report.*
+*.tar.gz

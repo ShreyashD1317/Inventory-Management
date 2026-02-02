@@ -1,0 +1,49 @@
+{
+  "name": "inventory-management-api",
+  "version": "1.0.0",
+  "description": "Production-grade inventory management REST API with full DevOps pipeline support",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest --coverage --verbose",
+    "test:watch": "jest --watch",
+    "test:integration": "jest --testPathPattern=integration",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "security:check": "npm audit --audit-level=moderate",
+    "sonar": "sonar-scanner"
+  },
+  "keywords": [
+    "inventory",
+    "api",
+    "rest",
+    "devops",
+    "jenkins",
+    "microservice"
+  ],
+  "author": "Shreyash Dhanawade",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "prom-client": "^15.1.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jest": "^27.6.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
