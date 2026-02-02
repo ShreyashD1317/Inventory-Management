@@ -67,11 +67,11 @@ pipeline {
                     REM Create build artifact directory
                     if not exist build-artifacts mkdir build-artifacts
                     
-                    REM Package application using tar (requires tar in PATH or use 7zip/PowerShell alternative)
+                    REM Package application using PowerShell Compress-Archive (more reliable on Windows)
                     echo Packaging application...
-                    tar -czf build-artifacts/%APP_NAME%-%BUILD_NUMBER%.tar.gz --exclude=node_modules --exclude=.git --exclude=build-artifacts --exclude=coverage .
+                    powershell -Command "Compress-Archive -Path * -DestinationPath build-artifacts\\%APP_NAME%-%BUILD_NUMBER%.zip -Force -CompressionLevel Optimal -Exclude node_modules,*.git*,build-artifacts,coverage"
                     
-                    echo ✓ Build artifact created: %APP_NAME%-%BUILD_NUMBER%.tar.gz
+                    echo ✓ Build artifact created: %APP_NAME%-%BUILD_NUMBER%.zip
                     dir build-artifacts
                 '''
                 
@@ -87,7 +87,7 @@ pipeline {
             post {
                 success {
                     echo "✓ Build stage completed successfully"
-                    archiveArtifacts artifacts: 'build-artifacts/*.tar.gz', fingerprint: true
+                    archiveArtifacts artifacts: 'build-artifacts/*.zip', fingerprint: true, allowEmptyArchive: true
                 }
                 failure {
                     echo "✗ Build stage failed"
