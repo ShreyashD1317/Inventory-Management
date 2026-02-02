@@ -283,15 +283,16 @@ pipeline {
                 bat '''
                     echo Starting staging deployment...
                     
-                    REM Stop existing containers
-                    docker-compose down || ver >nul
+                    REM Stop and remove existing containers forcefully
+                    docker-compose down --remove-orphans || ver >nul
+                    docker rm -f inventory-api 2>nul || ver >nul
                     
                     REM Start new containers
                     docker-compose up -d
                     
-                    REM Wait for application to start
+                    REM Wait for application to start (using ping for delay instead of timeout)
                     echo Waiting for application to start...
-                    timeout /t 10 /nobreak
+                    ping 127.0.0.1 -n 11 > nul
                     
                     echo Application started on staging
                 '''
