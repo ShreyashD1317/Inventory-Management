@@ -5,7 +5,7 @@ pipeline {
         // Application settings
         APP_NAME = 'inventory-management-api'
         DOCKER_IMAGE = "${APP_NAME}:${BUILD_NUMBER}"
-        DOCKER_REGISTRY = 'your-registry' // Update with your registry
+        DOCKER_REGISTRY = 'docker.io/shreyashd69' // Update with your registry
         
         // Deployment environments
         STAGING_SERVER = 'staging.example.com'
