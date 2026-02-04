@@ -416,7 +416,7 @@ pipeline {
                     
                     REM Check Prometheus metrics endpoint
                     echo Checking Prometheus metrics...
-                    curl -s http://localhost:3000/metrics 2>nul | more /E +1 /C +20 || echo Metrics endpoint not available
+                    curl -s http://localhost:3000/metrics 2>nul || echo Metrics endpoint not available
                     
                     echo.
                     echo ✓ Prometheus metrics endpoint is active
