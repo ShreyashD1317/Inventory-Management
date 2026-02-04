@@ -756,3 +756,4 @@ def sendNotification(String status, String title, String message) {
     } catch (Exception e) {
         echo "Notification error: ${e.message}"
     }
+}
