@@ -278,11 +278,115 @@ pipeline {
                     echo - Regular security audits
                 '''
             }
-            
+            // Generate Comprehensive Security Findings Document
+                bat '''
+                    echo Generating SECURITY_FINDINGS.md...
+                    powershell -ExecutionPolicy Bypass -File generate-security-report.ps1
+                '''
+                
+                // Email Security Report
+                script {
+                    try {
+                        def securityReport = readFile('SECURITY_FINDINGS.md')
+                        
+                        emailext(
+                            subject: "🔒 Security Scan Report - ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
+                            body: """
+                                <html>
+                                <head>
+                                    <style>
+                                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                                        .header { background-color: #4CAF50; color: white; padding: 20px; text-center; }
+                                        .warning { background-color: #ff9800; color: white; padding: 20px; text-align: center; }
+                                        .content { padding: 20px; }
+                                        .summary-box { background-color: #f5f5f5; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; }
+                                        .critical { color: #d32f2f; font-weight: bold; }
+                                        .high { color: #f57c00; font-weight: bold; }
+                                        .passed { color: #388e3c; font-weight: bold; }
+                                        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                                        th { background-color: #4CAF50; color: white; }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="${env.NPM_CRITICAL_VULNS.toInteger() > 0 || env.NPM_HIGH_VULNS.toInteger() > 0 ? 'warning' : 'header'}">
+                                        <h1>🔒 Security Scan Report</h1>
+                                        <p>Build #${env.BUILD_NUMBER} - ${new Date().format('yyyy-MM-dd HH:mm:ss')}</p>
+                                    </div>
+                                    
+                                    <div class="content">
+                                        <div class="summary-box">
+                                            <h2>📊 Quick Summary</h2>
+                                            <table>
+                                                <tr>
+                                                    <th>Scan Type</th>
+                                                    <th>Total</th>
+                                                    <th>Critical</th>
+                                                    <th>High</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>NPM Dependencies</strong></td>
+                                                    <td>${env.NPM_TOTAL_VULNS}</td>
+                                                    <td class="${env.NPM_CRITICAL_VULNS.toInteger() > 0 ? 'critical' : ''}">${env.NPM_CRITICAL_VULNS}</td>
+                                                    <td class="${env.NPM_HIGH_VULNS.toInteger() > 0 ? 'high' : ''}">${env.NPM_HIGH_VULNS}</td>
+                                                    <td class="${env.NPM_TOTAL_VULNS.toInteger() == 0 ? 'passed' : 'high'}">${env.NPM_TOTAL_VULNS.toInteger() == 0 ? '✅ PASS' : '⚠️ REVIEW'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Docker Image</strong></td>
+                                                    <td>${env.TRIVY_TOTAL_VULNS}</td>
+                                                    <td class="${env.TRIVY_CRITICAL_VULNS != 'N/A' && env.TRIVY_CRITICAL_VULNS.toInteger() > 0 ? 'critical' : ''}">${env.TRIVY_CRITICAL_VULNS}</td>
+                                                    <td class="${env.TRIVY_HIGH_VULNS != 'N/A' && env.TRIVY_HIGH_VULNS.toInteger() > 0 ? 'high' : ''}">${env.TRIVY_HIGH_VULNS}</td>
+                                                    <td>${env.TRIVY_TOTAL_VULNS == 'N/A' ? 'N/A' : (env.TRIVY_TOTAL_VULNS.toInteger() == 0 ? '✅ PASS' : '⚠️ REVIEW')}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        
+                                        <h2>📄 Detailed Report</h2>
+                                        <p>The complete security findings document is attached to this email as <strong>SECURITY_FINDINGS.md</strong></p>
+                                        
+                                        <p>You can also:</p>
+                                        <ul>
+                                            <li><a href="${env.BUILD_URL}">View Build Details in Jenkins</a></li>
+                                            <li><a href="${env.BUILD_URL}artifact/SECURITY_FINDINGS.md">Download Security Report</a></li>
+                                            <li><a href="${env.BUILD_URL}console">View Console Output</a></li>
+                                        </ul>
+                                        
+                                        <h2>🔍 Next Steps</h2>
+                                        ${env.NPM_TOTAL_VULNS.toInteger() > 0 || (env.TRIVY_TOTAL_VULNS != 'N/A' && env.TRIVY_TOTAL_VULNS.toInteger() > 0) ? 
+                                            '<p class="high">⚠️ Vulnerabilities were found. Please review the attached report.</p>' : 
+                                            '<p class="passed">✅ No vulnerabilities found. Your application is secure!</p>'}
+                                        
+                                        <ol>
+                                            <li>Review the attached SECURITY_FINDINGS.md file</li>
+                                            <li>Prioritize fixes based on severity levels</li>
+                                            <li>Apply recommended remediation actions</li>
+                                            <li>Re-run the security scan to verify fixes</li>
+                                        </ol>
+                                    </div>
+                                    
+                                    <div style="background-color: #f5f5f5; padding: 15px; text-align: center; margin-top: 30px;">
+                                        <p>This is an automated security report generated by Jenkins Pipeline</p>
+                                        <p>Project: ${env.JOB_NAME} | Build: #${env.BUILD_NUMBER}</p>
+                                    </div>
+                                </body>
+                                </html>
+                            """,
+                            to: "${EMAIL_RECIPIENTS}",
+                            mimeType: 'text/html',
+                            attachmentsPattern: 'SECURITY_FINDINGS.md,npm-audit-full.json,trivy-summary.txt'
+                        )
+                        
+                        echo "✅ Security report emailed successfully to ${EMAIL_RECIPIENTS}"
+                    } catch (Exception e) {
+                        echo "⚠️ Failed to email security report: ${e.message}"
+                        echo "Report is still available in Jenkins artifacts"
+                    }
+                }
             post {
                 always {
                     // Archive security reports
-                    archiveArtifacts artifacts: '*.json', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'SECURITY_FINDINGS.md,npm-audit-full.json,npm-audit-summary.txt,security-report.txt,trivy-report.json,trivy-summary.txt', allowEmptyArchive: true
                 }
                 success {
                     echo "✓ Security scanning completed"
@@ -756,3 +860,4 @@ def sendNotification(String status, String title, String message) {
     } catch (Exception e) {
         echo "Notification error: ${e.message}"
     }
+}
