@@ -347,33 +347,36 @@ pipeline {
 
                 // NPM Audit with detailed reporting
                 script {
-                    // Run NPM audit and ensure files are created
                     bat '''
                         echo ============================================
                         echo NPM DEPENDENCY SECURITY AUDIT
                         echo ============================================
                         
-                        REM Run npm audit JSON output (continue on error)
-                        npm audit --json > npm-audit-full.json 2>&1 || ver >nul
+                        REM Create empty files first
+                        echo. > npm-audit-full.json
+                        echo. > npm-audit-summary.txt
                         
-                        REM Run npm audit summary output (continue on error)
-                        npm audit --audit-level=moderate > npm-audit-summary.txt 2>&1 || ver >nul
-                        
-                        REM Ensure files exist (create default if missing)
-                        if not exist npm-audit-full.json (
-                            echo {"metadata":{"vulnerabilities":{"total":0,"critical":0,"high":0,"moderate":0,"low":0,"info":0}}} > npm-audit-full.json
+                        REM Run npm audit and capture output
+                        npm audit --json > npm-audit-full.json 2>&1
+                        if %ERRORLEVEL% EQU 0 (
+                            echo No vulnerabilities found > npm-audit-summary.txt
+                        ) else (
+                            npm audit > npm-audit-summary.txt 2>&1
                         )
                         
+                        REM Verify files exist
+                        if not exist npm-audit-full.json (
+                            echo {"metadata":{"vulnerabilities":{"total":0,"critical":0,"high":0}}} > npm-audit-full.json
+                        )
                         if not exist npm-audit-summary.txt (
-                            echo No vulnerabilities found - npm audit completed successfully > npm-audit-summary.txt
+                            echo NPM audit completed > npm-audit-summary.txt
                         )
                         
                         echo.
-                        echo ✓ NPM Audit reports created
-                        dir npm-audit*.* /b
+                        echo Files created:
+                        dir npm-audit-*.* /b
                     '''
 
-                    // Display summary
                     bat '''
                         echo.
                         echo ============================================
@@ -383,18 +386,28 @@ pipeline {
                         echo.
                     '''
 
-                    // Parse vulnerability counts with error handling
-                    env.NPM_TOTAL_VULNS = bat(returnStdout: true, script: '''
-                        powershell -Command "try { $json = Get-Content npm-audit-full.json -Raw | ConvertFrom-Json; if ($json.metadata.vulnerabilities.total) { Write-Output $json.metadata.vulnerabilities.total } else { Write-Output 0 } } catch { Write-Output 0 }"
-                    ''').trim()
+                    // Parse vulnerability counts
+                    try {
+                        env.NPM_TOTAL_VULNS = bat(returnStdout: true, script: '''
+                            @echo off
+                            powershell -Command "$json = Get-Content npm-audit-full.json -Raw | ConvertFrom-Json; if ($json.metadata.vulnerabilities.total) { $json.metadata.vulnerabilities.total } else { 0 }" 2>nul || echo 0
+                        ''').trim()
 
-                    env.NPM_CRITICAL_VULNS = bat(returnStdout: true, script: '''
-                        powershell -Command "try { $json = Get-Content npm-audit-full.json -Raw | ConvertFrom-Json; if ($json.metadata.vulnerabilities.critical) { Write-Output $json.metadata.vulnerabilities.critical } else { Write-Output 0 } } catch { Write-Output 0 }"
-                    ''').trim()
+                        env.NPM_CRITICAL_VULNS = bat(returnStdout: true, script: '''
+                            @echo off
+                            powershell -Command "$json = Get-Content npm-audit-full.json -Raw | ConvertFrom-Json; if ($json.metadata.vulnerabilities.critical) { $json.metadata.vulnerabilities.critical } else { 0 }" 2>nul || echo 0
+                        ''').trim()
 
-                    env.NPM_HIGH_VULNS = bat(returnStdout: true, script: '''
-                        powershell -Command "try { $json = Get-Content npm-audit-full.json -Raw | ConvertFrom-Json; if ($json.metadata.vulnerabilities.high) { Write-Output $json.metadata.vulnerabilities.high } else { Write-Output 0 } } catch { Write-Output 0 }"
-                    ''').trim()
+                        env.NPM_HIGH_VULNS = bat(returnStdout: true, script: '''
+                            @echo off
+                            powershell -Command "$json = Get-Content npm-audit-full.json -Raw | ConvertFrom-Json; if ($json.metadata.vulnerabilities.high) { $json.metadata.vulnerabilities.high } else { 0 }" 2>nul || echo 0
+                        ''').trim()
+                    } catch (Exception e) {
+                        echo "⚠️ Failed to parse NPM audit JSON - setting to 0"
+                        env.NPM_TOTAL_VULNS = '0'
+                        env.NPM_CRITICAL_VULNS = '0'
+                        env.NPM_HIGH_VULNS = '0'
+                    }
 
                     echo """
                     ============================================
@@ -407,7 +420,6 @@ pipeline {
                     ============================================
                     """
                 }
-
                 // Docker image security scan
                 script {
                     try {
