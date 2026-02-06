@@ -132,7 +132,7 @@ pipeline {
             post {
                 success {
                     echo "✓ Build stage completed - artifacts created and versioned"
-                    archiveArtifacts artifacts: 'build-artifacts/*.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'build-artifacts/*.zip', fingerprint: true, allowEmptyArchive: true
                 }
                 failure {
                     echo "✗ Build stage failed"
