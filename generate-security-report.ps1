@@ -1,251 +1,422 @@
-# Generate SECURITY_FINDINGS.md
-# This script creates a comprehensive security report
+# ═══════════════════════════════════════════════════════════════════
+# Security Findings Report Generator
+# Parses NPM audit and Trivy scan results into comprehensive markdown
+# ═══════════════════════════════════════════════════════════════════
 
-param(
-    [string]$BuildNumber = $env:BUILD_NUMBER,
-    [string]$AppName = $env:APP_NAME,
-    [string]$JobName = $env:JOB_NAME,
-    [string]$NPM_Total = $env:NPM_TOTAL_VULNS,
-    [string]$NPM_Critical = $env:NPM_CRITICAL_VULNS,
-    [string]$NPM_High = $env:NPM_HIGH_VULNS,
-    [string]$Trivy_Total = $env:TRIVY_TOTAL_VULNS,
-    [string]$Trivy_Critical = $env:TRIVY_CRITICAL_VULNS,
-    [string]$Trivy_High = $env:TRIVY_HIGH_VULNS,
-    [string]$DockerImage = $env:DOCKER_IMAGE
-)
+Write-Host "============================================"
+Write-Host "GENERATING COMPREHENSIVE SECURITY REPORT"
+Write-Host "============================================"
 
+# Initialize report
 $report = @"
-# Security Scan Results - Build #$BuildNumber
+# 🔒 Security Scan Results - Build #$env:BUILD_NUMBER
 
-**Project:** $AppName
-**Build Number:** $BuildNumber
-**Scan Date:** $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-**Jenkins Job:** $JobName
-
----
-
-## Executive Summary
-
-This document contains the automated security scan results for build #$BuildNumber.
-Two types of scans were performed:
-
-1. **NPM Dependency Audit** - Scans Node.js packages for known vulnerabilities
-2. **Docker Image Scan (Trivy)** - Scans container images for OS and library vulnerabilities
+**Date:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')  
+**Project:** $env:JOB_NAME  
+**Build:** #$env:BUILD_NUMBER  
 
 ---
 
-## 1. NPM Dependency Security Scan
-
-### Summary
-
-- **Status:** $NPM_Total vulnerabilities found
-- **Critical:** $NPM_Critical
-- **High:** $NPM_High
-
 "@
 
-if ($NPM_Total -eq "0") {
-    $report += @"
-
-### Result: ✅ PASS
-
-**No vulnerabilities found in NPM dependencies!**
-
-Your Node.js packages are secure and up-to-date.
-
-"@
-} else {
-    $report += @"
-
-### Result: ⚠️ REQUIRES ATTENTION
-
-**Vulnerabilities detected in NPM dependencies.**
-
-See detailed findings below.
-
-"@
-}
+# ═══════════════════════════════════════════════════════════════════
+# SECTION 1: NPM AUDIT RESULTS
+# ═══════════════════════════════════════════════════════════════════
 
 $report += @"
-
-### Detailed Findings
-
-``````txt
-"@
-
-if (Test-Path "npm-audit-summary.txt") {
-    $report += Get-Content "npm-audit-summary.txt" -Raw
-}
-
-$report += @"
-``````
+## 📦 1. NPM Dependency Security Audit
 
 "@
 
-if ($NPM_Total -ne "0") {
-    $report += @"
-
-### Recommended Actions
-
-1. Review the detailed findings above
-2. Run ``npm audit fix`` to automatically fix compatible issues
-3. Run ``npm audit fix --force`` for fixes requiring breaking changes
-4. Manually update packages that cannot be automatically fixed
-5. Re-run security scan to verify fixes
-
-"@
-}
-
-$report += @"
-
----
-
-## 2. Docker Image Security Scan (Trivy)
-
-### Summary
-
-- **Status:** $Trivy_Total vulnerabilities found
-- **Critical:** $Trivy_Critical
-- **High:** $Trivy_High
-- **Image:** $DockerImage
-
-"@
-
-if ($Trivy_Total -eq "0") {
-    $report += @"
-
-### Result: ✅ PASS
-
-**No vulnerabilities found in Docker image!**
-
-"@
-} elseif ($Trivy_Total -eq "N/A") {
-    $report += @"
-
-### Result: ⚠️ SCAN NOT PERFORMED
-
-Docker was not available during the build.
-
-"@
-} else {
-    $report += @"
-
-### Result: ⚠️ REQUIRES ATTENTION
-
-**Vulnerabilities detected in Docker base image.**
-
-These are typically in the base Alpine/Ubuntu image, not your application code.
-
-"@
-}
-
-if (Test-Path "trivy-summary.txt") {
-    $report += @"
-
-### Detailed Findings
-
-``````txt
-"@
-    $report += Get-Content "trivy-summary.txt" -Raw
-    $report += @"
-``````
-
-"@
-}
-
-if ($Trivy_Total -ne "0" -and $Trivy_Total -ne "N/A") {
-    $report += @"
-
-### Recommended Actions
-
-**Option 1: Update Base Image (Recommended)**
-
-Update your Dockerfile:
-
-``````dockerfile
-# Update from
-FROM node:18-alpine
-
-# To latest
-FROM node:18-alpine3.20
-``````
-
-**Option 2: Update Packages in Dockerfile**
-
-``````dockerfile
-FROM node:18-alpine
-RUN apk update && apk upgrade --no-cache
-``````
-
-**Option 3: Accept Risk (If Low Impact)**
-
-If vulnerabilities are MEDIUM/LOW and don't affect your application:
-
-- Document the decision to accept the risk
-- Explain why (e.g., container runs as non-root, affected packages not used)
-- Set a review date to re-evaluate
-
-"@
-}
-
-$report += @"
-
----
-
-## Severity Levels Explained
-
-- **CRITICAL** (9.0-10.0): Immediate action required - actively exploitable vulnerabilities
-- **HIGH** (7.0-8.9): Should be fixed soon - significant security risk
-- **MEDIUM** (4.0-6.9): Should be reviewed - potential security concerns
-- **LOW** (0.1-3.9): Minor issues - fix when convenient
-- **INFO** (0.0): Informational only - no immediate action needed
-
----
-
-## Overall Recommendation
-
-"@
-
-if ($NPM_Total -eq "0" -and $Trivy_Total -eq "0") {
-    $report += "✅ **ALL CLEAR** - No security vulnerabilities found. Your application is secure!`n"
-} else {
-    $criticalOrHigh = ($NPM_Critical -ne "0") -or ($NPM_High -ne "0") -or 
-                     (($Trivy_Critical -ne "0" -and $Trivy_Critical -ne "N/A")) -or 
-                     (($Trivy_High -ne "0" -and $Trivy_High -ne "N/A"))
-    
-    if ($criticalOrHigh) {
+try {
+    if (Test-Path "npm-audit-full.json") {
+        Write-Host "✓ Processing NPM audit results..."
+        
+        $npmAudit = Get-Content "npm-audit-full.json" -Raw | ConvertFrom-Json
+        
+        $npmTotal = if ($npmAudit.metadata.vulnerabilities.total) { $npmAudit.metadata.vulnerabilities.total } else { 0 }
+        $npmInfo = if ($npmAudit.metadata.vulnerabilities.info) { $npmAudit.metadata.vulnerabilities.info } else { 0 }
+        $npmLow = if ($npmAudit.metadata.vulnerabilities.low) { $npmAudit.metadata.vulnerabilities.low } else { 0 }
+        $npmModerate = if ($npmAudit.metadata.vulnerabilities.moderate) { $npmAudit.metadata.vulnerabilities.moderate } else { 0 }
+        $npmHigh = if ($npmAudit.metadata.vulnerabilities.high) { $npmAudit.metadata.vulnerabilities.high } else { 0 }
+        $npmCritical = if ($npmAudit.metadata.vulnerabilities.critical) { $npmAudit.metadata.vulnerabilities.critical } else { 0 }
+        
         $report += @"
-⚠️ **ACTION REQUIRED** - Critical or High severity vulnerabilities found.
+### Summary
+- **Total Vulnerabilities:** $npmTotal
+- **Critical:** $npmCritical 🔴
+- **High:** $npmHigh 🟠
+- **Moderate:** $npmModerate 🟡
+- **Low:** $npmLow 🔵
+- **Info:** $npmInfo ℹ️
 
-Please address these vulnerabilities before deploying to production.
 "@
+
+        if ($npmTotal -eq 0) {
+            $report += "**Status:** ✅ **CLEAN** - No vulnerabilities found in NPM dependencies!`n`n"
+        } else {
+            $report += "**Status:** ⚠️ **VULNERABILITIES FOUND** - Review required`n`n"
+            
+            # Add detailed vulnerability information if available
+            if ($npmAudit.vulnerabilities) {
+                $report += "### Detailed Findings`n`n"
+                
+                $vulnCount = 0
+                foreach ($vuln in $npmAudit.vulnerabilities.PSObject.Properties) {
+                    $vulnCount++
+                    if ($vulnCount -le 10) {  # Limit to first 10 for readability
+                        $v = $vuln.Value
+                        $severity = if ($v.severity) { $v.severity.ToUpper() } else { "UNKNOWN" }
+                        $name = if ($v.name) { $v.name } else { $vuln.Name }
+                        $via = if ($v.via -and $v.via.Count -gt 0) { 
+                            if ($v.via[0] -is [string]) { $v.via[0] } 
+                            elseif ($v.via[0].title) { $v.via[0].title }
+                            else { "See npm-audit-full.json for details" }
+                        } else { "Direct vulnerability" }
+                        
+                        $report += "#### $vulnCount. $name`n"
+                        $report += "- **Severity:** $severity`n"
+                        $report += "- **Issue:** $via`n"
+                        if ($v.range) { $report += "- **Affected Versions:** $($v.range)`n" }
+                        if ($v.fixAvailable) { 
+                            $report += "- **Fix Available:** Yes`n" 
+                        } else {
+                            $report += "- **Fix Available:** No (manual intervention required)`n"
+                        }
+                        $report += "`n"
+                    }
+                }
+                
+                if ($vulnCount -gt 10) {
+                    $report += "_... and $($vulnCount - 10) more. See npm-audit-full.json for complete details._`n`n"
+                }
+            }
+        }
+        
+        $report += @"
+### Recommended Actions
+"@
+        if ($npmCritical -gt 0) {
+            $report += @"
+
+🔴 **CRITICAL PRIORITY:**
+- Immediately review and fix $npmCritical critical vulnerabilities
+- Run ``npm audit fix --force`` (test thoroughly after)
+- Consider updating affected packages manually if auto-fix breaks functionality
+
+"@
+        }
+        
+        if ($npmHigh -gt 0) {
+            $report += @"
+🟠 **HIGH PRIORITY:**
+- Review $npmHigh high-severity vulnerabilities
+- Run ``npm audit fix`` to auto-fix compatible issues
+- Plan manual updates for packages without auto-fix
+
+"@
+        }
+        
+        if ($npmModerate -gt 0 -or $npmLow -gt 0) {
+            $report += @"
+🟡 **MEDIUM PRIORITY:**
+- Schedule updates for moderate/low severity issues
+- Test in development environment before production deployment
+
+"@
+        }
+        
+        if ($npmTotal -eq 0) {
+            $report += @"
+✅ **No action required** - All dependencies are secure!
+
+"@
+        }
+        
     } else {
-        $report += @"
-ℹ️ **REVIEW RECOMMENDED** - Medium or Low severity vulnerabilities found.
-
-Review and address when convenient. Not critical for production deployment.
-"@
+        $report += "⚠️ **NPM audit file not found** - Scan may not have run successfully.`n`n"
     }
+} catch {
+    $report += "⚠️ **Error parsing NPM audit results:** $($_.Exception.Message)`n`n"
+}
+
+# ═══════════════════════════════════════════════════════════════════
+# SECTION 2: DOCKER IMAGE SECURITY SCAN (TRIVY)
+# ═══════════════════════════════════════════════════════════════════
+
+$report += @"
+---
+
+## 🐳 2. Docker Image Security Scan (Trivy)
+
+"@
+
+try {
+    if (Test-Path "trivy-report.json") {
+        Write-Host "✓ Processing Trivy scan results..."
+        
+        $trivyReport = Get-Content "trivy-report.json" -Raw | ConvertFrom-Json
+        
+        # Count vulnerabilities
+        $trivyTotal = 0
+        $trivyCritical = 0
+        $trivyHigh = 0
+        $trivyMedium = 0
+        $trivyLow = 0
+        
+        $allVulns = @()
+        
+        if ($trivyReport.Results) {
+            foreach ($result in $trivyReport.Results) {
+                if ($result.Vulnerabilities) {
+                    foreach ($vuln in $result.Vulnerabilities) {
+                        $trivyTotal++
+                        $allVulns += $vuln
+                        
+                        switch ($vuln.Severity) {
+                            "CRITICAL" { $trivyCritical++ }
+                            "HIGH" { $trivyHigh++ }
+                            "MEDIUM" { $trivyMedium++ }
+                            "LOW" { $trivyLow++ }
+                        }
+                    }
+                }
+            }
+        }
+        
+        $report += @"
+### Summary
+- **Total Vulnerabilities:** $trivyTotal
+- **Critical:** $trivyCritical 🔴
+- **High:** $trivyHigh 🟠
+- **Medium:** $trivyMedium 🟡
+- **Low:** $trivyLow 🔵
+
+**Image:** ``$env:DOCKER_IMAGE``
+
+"@
+
+        if ($trivyTotal -eq 0) {
+            $report += "**Status:** ✅ **CLEAN** - No vulnerabilities found in Docker image!`n`n"
+        } else {
+            $report += "**Status:** ⚠️ **VULNERABILITIES FOUND** - Review required`n`n"
+            
+            # Show critical and high severity vulnerabilities
+            $criticalAndHigh = $allVulns | Where-Object { $_.Severity -eq "CRITICAL" -or $_.Severity -eq "HIGH" } | Select-Object -First 15
+            
+            if ($criticalAndHigh.Count -gt 0) {
+                $report += "### Critical & High Severity Findings`n`n"
+                
+                $vulnNum = 0
+                foreach ($vuln in $criticalAndHigh) {
+                    $vulnNum++
+                    $vulnId = if ($vuln.VulnerabilityID) { $vuln.VulnerabilityID } else { "UNKNOWN" }
+                    $pkgName = if ($vuln.PkgName) { $vuln.PkgName } else { "Unknown Package" }
+                    $installedVer = if ($vuln.InstalledVersion) { $vuln.InstalledVersion } else { "unknown" }
+                    $fixedVer = if ($vuln.FixedVersion) { $vuln.FixedVersion } else { "No fix available" }
+                    $severity = if ($vuln.Severity) { $vuln.Severity } else { "UNKNOWN" }
+                    $title = if ($vuln.Title) { $vuln.Title } else { $vulnId }
+                    
+                    $report += "#### $vulnNum. $vulnId - $title`n"
+                    $report += "- **Package:** $pkgName`n"
+                    $report += "- **Severity:** $severity`n"
+                    $report += "- **Installed Version:** $installedVer`n"
+                    $report += "- **Fixed Version:** $fixedVer`n"
+                    if ($vuln.PrimaryURL) { $report += "- **Reference:** $($vuln.PrimaryURL)`n" }
+                    $report += "`n"
+                }
+                
+                if ($trivyCritical + $trivyHigh -gt 15) {
+                    $report += "_... and $(($trivyCritical + $trivyHigh) - 15) more critical/high vulnerabilities. See trivy-report.json for complete details._`n`n"
+                }
+            }
+        }
+        
+        $report += @"
+### Recommended Actions
+"@
+        if ($trivyCritical -gt 0) {
+            $report += @"
+
+🔴 **CRITICAL PRIORITY:**
+- Update base Docker image to latest patched version
+- Review $trivyCritical critical vulnerabilities immediately
+- Rebuild container with updated dependencies
+
+"@
+        }
+        
+        if ($trivyHigh -gt 0) {
+            $report += @"
+🟠 **HIGH PRIORITY:**
+- Plan updates for $trivyHigh high-severity vulnerabilities
+- Update system packages in Dockerfile
+- Consider using minimal base images (alpine, distroless)
+
+"@
+        }
+        
+        if ($trivyMedium -gt 0 -or $trivyLow -gt 0) {
+            $report += @"
+🟡 **MEDIUM PRIORITY:**
+- Review medium/low severity issues during next maintenance window
+- Update non-critical packages
+
+"@
+        }
+        
+        if ($trivyTotal -eq 0) {
+            $report += @"
+✅ **No action required** - Docker image is secure!
+
+"@
+        }
+        
+    } else {
+        $report += "⚠️ **Trivy scan results not available** - Docker scan may not have run.`n`n"
+    }
+} catch {
+    $report += "⚠️ **Error parsing Trivy results:** $($_.Exception.Message)`n`n"
+}
+
+# ═══════════════════════════════════════════════════════════════════
+# SECTION 3: OVERALL SUMMARY & RISK ASSESSMENT
+# ═══════════════════════════════════════════════════════════════════
+
+$report += @"
+---
+
+## 📊 3. Overall Security Summary
+
+"@
+
+# Calculate total risk
+$totalCritical = $npmCritical + $trivyCritical
+$totalHigh = $npmHigh + $trivyHigh
+$totalVulns = $npmTotal + $trivyTotal
+
+if ($totalVulns -eq 0) {
+    $report += @"
+### ✅ Security Status: **EXCELLENT**
+
+**All security scans passed with no vulnerabilities found!**
+
+Your application and its dependencies are currently secure. Continue monitoring for new vulnerabilities with each build.
+
+"@
+} elseif ($totalCritical -gt 0) {
+    $report += @"
+### 🔴 Security Status: **CRITICAL - IMMEDIATE ACTION REQUIRED**
+
+**$totalCritical critical vulnerabilities detected!**
+
+This represents a **HIGH SECURITY RISK**. Critical vulnerabilities should be addressed immediately before deploying to production.
+
+"@
+} elseif ($totalHigh -gt 0) {
+    $report += @"
+### 🟠 Security Status: **HIGH RISK - ACTION REQUIRED**
+
+**$totalHigh high-severity vulnerabilities detected.**
+
+These vulnerabilities pose a significant security risk and should be prioritized for remediation.
+
+"@
+} else {
+    $report += @"
+### 🟡 Security Status: **MODERATE RISK**
+
+**$totalVulns low/medium severity vulnerabilities detected.**
+
+While not immediately critical, these should be addressed in upcoming maintenance cycles.
+
+"@
+}
+
+# ═══════════════════════════════════════════════════════════════════
+# SECTION 4: NEXT STEPS
+# ═══════════════════════════════════════════════════════════════════
+
+$report += @"
+---
+
+## 🔧 4. Next Steps
+
+### Immediate Actions (Today)
+1. ✅ Review this security report
+2. ✅ Archive this report in Jenkins artifacts
+3. ✅ Assess business impact of identified vulnerabilities
+
+### Short-term (This Week)
+"@
+
+if ($npmCritical -gt 0 -or $trivyCritical -gt 0) {
+    $report += @"
+1. 🔴 **FIX CRITICAL VULNERABILITIES** - Do not deploy until resolved
+2. Update dependencies with ``npm audit fix`` or manual updates
+3. Rebuild and re-scan Docker images
+4. Re-run security pipeline to verify fixes
+
+"@
+} elseif ($npmHigh -gt 0 -or $trivyHigh -gt 0) {
+    $report += @"
+1. 🟠 Plan remediation for high-severity vulnerabilities
+2. Update affected packages and dependencies
+3. Test thoroughly in staging environment
+4. Re-run security scan to verify fixes
+
+"@
+} else {
+    $report += @"
+1. 🟡 Schedule updates for identified vulnerabilities
+2. Review and plan dependency updates
+3. Monitor for new security advisories
+
+"@
 }
 
 $report += @"
+### Long-term (Ongoing)
+1. Run security scans on every build
+2. Enable automated dependency updates (Dependabot/Renovate)
+3. Subscribe to security advisories for used packages
+4. Regular security audits and penetration testing
+5. Security training for development team
 
 ---
 
-## Additional Resources
+## 📎 Attachments
 
-- [NPM Audit Documentation](https://docs.npmjs.com/cli/v8/commands/npm-audit)
-- [Trivy Documentation](https://aquasecurity.github.io/trivy/)
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Node.js Security Best Practices](https://github.com/goldbergyoni/nodebestpractices#6-security-best-practices)
+The following detailed reports are available as Jenkins artifacts:
+- ``npm-audit-full.json`` - Complete NPM vulnerability report
+- ``npm-audit-summary.txt`` - NPM audit text summary
+- ``trivy-report.json`` - Complete Trivy scan results
+- ``trivy-summary.txt`` - Trivy scan text summary
 
 ---
 
-*Report generated automatically by Jenkins Pipeline*
-*Build URL: $env:BUILD_URL*
+**Report Generated:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')  
+**Pipeline:** $env:JOB_NAME  
+**Build:** #$env:BUILD_NUMBER  
+
+_This is an automated security report. For questions, contact the DevOps team._
 "@
 
-# Write to file
-$report | Out-File -FilePath "SECURITY_FINDINGS.md" -Encoding UTF8
+# ═══════════════════════════════════════════════════════════════════
+# WRITE REPORT TO FILE
+# ═══════════════════════════════════════════════════════════════════
 
-Write-Host "✅ SECURITY_FINDINGS.md generated successfully"
+try {
+    $report | Out-File -FilePath "SECURITY_FINDINGS.md" -Encoding UTF8 -Force
+    Write-Host "✅ Security report generated: SECURITY_FINDINGS.md"
+    Write-Host "   Total vulnerabilities: NPM=$npmTotal, Trivy=$trivyTotal"
+    Write-Host "   Critical: NPM=$npmCritical, Trivy=$trivyCritical"
+    Write-Host "   High: NPM=$npmHigh, Trivy=$trivyHigh"
+} catch {
+    Write-Host "❌ Error writing report: $($_.Exception.Message)"
+    exit 1
+}
+
+Write-Host "============================================"
+Write-Host "✅ SECURITY REPORT GENERATION COMPLETE"
+Write-Host "============================================"
