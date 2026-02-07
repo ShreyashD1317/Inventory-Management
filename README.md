@@ -1,393 +1,1013 @@
 # Inventory Management API
 
+A production-ready RESTful API for inventory management with enterprise-grade DevOps practices, comprehensive testing, and automated CI/CD pipeline.
+
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://jenkins.example.com)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-green)](https://sonarqube.example.com)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org)
 
-A production-grade RESTful API for inventory management with a complete DevOps CI/CD pipeline using Jenkins.
+---
 
-## 🚀 Features
+## Table of Contents
 
-- **RESTful API** with full CRUD operations
-- **Advanced filtering** and pagination
-- **Input validation** and error handling
-- **Security middleware** (Helmet, CORS, Rate Limiting)
-- **Prometheus metrics** for monitoring
-- **Health check endpoints** for container orchestration
-- **Comprehensive test suite** with Jest
-- **Docker containerization**
-- **Complete CI/CD pipeline** with Jenkins
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Monitoring & Observability](#monitoring--observability)
+- [Security](#security)
+- [Deployment](#deployment)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License](#license)
 
-## 📋 Prerequisites
+---
 
-- Node.js 18+ and npm
-- Docker and Docker Compose
-- Jenkins (for CI/CD pipeline)
-- Git
+## Overview
 
-## 🛠️ Technology Stack
+The Inventory Management API is a modern, scalable REST API built with Node.js and Express.js that provides complete inventory management capabilities. The project demonstrates professional software development practices including automated testing, continuous integration/deployment, security scanning, code quality analysis, and production monitoring.
 
-- **Runtime**: Node.js 18
-- **Framework**: Express.js
-- **Testing**: Jest + Supertest
-- **Code Quality**: ESLint (Airbnb style guide)
-- **Security**: Helmet, express-rate-limit, npm audit
-- **Monitoring**: Prometheus, prom-client
-- **Containerization**: Docker, Docker Compose
-- **CI/CD**: Jenkins Pipeline
+### Key Capabilities
 
-## 📦 Installation
+- Full CRUD operations for product inventory management
+- Advanced filtering, pagination, and search functionality
+- Real-time stock level management with multiple operations
+- Comprehensive validation and error handling
+- Production-grade security with rate limiting and input sanitization
+- Prometheus metrics for monitoring and observability
+- Docker containerization for consistent deployments
+- Automated CI/CD pipeline with Jenkins
 
-### Local Development
+---
+
+## Features
+
+### Core Functionality
+
+- **Product Management**: Create, read, update, and delete products with full validation
+- **Stock Operations**: Add, subtract, or set stock levels with transaction-like operations
+- **Advanced Filtering**: Filter by category, price range, stock availability, and more
+- **Pagination**: Efficient data retrieval with customizable page size
+- **Statistics Dashboard**: Real-time inventory metrics and analytics
+- **Health Checks**: Kubernetes-ready liveness and readiness probes
+
+### Technical Features
+
+- **RESTful Architecture**: Follows REST best practices with proper HTTP methods and status codes
+- **Input Validation**: Comprehensive validation using express-validator
+- **Security Middleware**: Helmet.js, CORS, and rate limiting protection
+- **Error Handling**: Centralized error handling with detailed error responses
+- **Logging**: Structured logging for all requests and operations
+- **Metrics Export**: Prometheus-compatible metrics endpoint
+- **Graceful Shutdown**: Proper cleanup on SIGTERM signals
+- **Health Monitoring**: Dedicated endpoints for container orchestration
+
+---
+
+## Architecture
+
+### Application Structure
+
+```
+inventory-management-api/
+├── app.js                          # Main application entry point
+├── app.test.js                     # Comprehensive unit tests
+├── integration.test.js             # API integration tests
+├── package.json                    # Project dependencies and scripts
+├── jest.config.js                  # Testing configuration
+├── .eslintrc.js                   # Code quality rules
+├── Dockerfile                      # Container image definition
+├── docker-compose.yml              # Development environment
+├── docker-compose.prod.yml         # Production environment
+├── Jenkinsfile                     # CI/CD pipeline definition
+├── prometheus.yml                  # Monitoring configuration
+├── generate-security-report.ps1   # Security analysis script
+└── README.md                       # Project documentation
+```
+
+### System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Load Balancer                          │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+         ┌─────────────┴─────────────┐
+         │                           │
+    ┌────▼────┐                 ┌────▼────┐
+    │  API    │                 │  API    │
+    │Instance │                 │Instance │
+    └────┬────┘                 └────┬────┘
+         │                           │
+         └─────────────┬─────────────┘
+                       │
+              ┌────────▼────────┐
+              │   Prometheus    │
+              │   (Metrics)     │
+              └────────┬────────┘
+                       │
+              ┌────────▼────────┐
+              │    Grafana      │
+              │ (Visualization) │
+              └─────────────────┘
+```
+
+---
+
+## Technology Stack
+
+### Runtime & Framework
+- **Node.js 18+**: JavaScript runtime environment
+- **Express.js 4.18**: Web application framework
+- **prom-client**: Prometheus metrics library
+
+### Security & Validation
+- **Helmet.js**: Security headers middleware
+- **express-validator**: Input validation and sanitization
+- **express-rate-limit**: API rate limiting
+- **CORS**: Cross-origin resource sharing
+
+### Testing & Quality
+- **Jest 29**: Testing framework with coverage reporting
+- **Supertest**: HTTP assertion library for API testing
+- **ESLint**: Code quality and style enforcement
+- **Airbnb Style Guide**: JavaScript coding standards
+
+### DevOps & Infrastructure
+- **Docker**: Container platform
+- **Docker Compose**: Multi-container orchestration
+- **Jenkins**: CI/CD automation server
+- **Prometheus**: Metrics collection and monitoring
+- **Grafana**: Metrics visualization and dashboards
+- **Trivy**: Container security scanning
+- **SonarQube**: Code quality analysis (optional)
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- **Node.js** 18.0.0 or higher ([Download](https://nodejs.org))
+- **npm** 9.0.0 or higher (comes with Node.js)
+- **Docker** 20.10 or higher ([Download](https://www.docker.com))
+- **Docker Compose** 2.0 or higher
+- **Git** for version control
+
+### Installation
+
+#### 1. Clone the Repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/inventory-management-api.git
 cd inventory-management-api
+```
 
-# Install dependencies
+#### 2. Install Dependencies
+
+```bash
 npm install
+```
 
-# Start the development server
+#### 3. Run the Application
+
+**Development Mode:**
+```bash
 npm run dev
+```
 
-# Or start production server
+**Production Mode:**
+```bash
 npm start
 ```
 
+The API will be available at `http://localhost:3000`
+
+#### 4. Using Docker (Recommended)
+
+**Development Environment:**
+```bash
+docker-compose up -d
+```
+
+**Production Environment:**
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+**View Logs:**
+```bash
+docker-compose logs -f
+```
+
+**Stop Services:**
+```bash
+docker-compose down
+```
+
+### Verify Installation
+
+Check the health endpoint:
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-02-07T10:30:00.000Z",
+  "uptime": 42.123,
+  "environment": "production"
+}
+```
+
+---
+
+## API Documentation
+
+### Base URL
+```
+http://localhost:3000
+```
+
+### Health & Monitoring Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check for container orchestration |
+| `/ready` | GET | Readiness probe endpoint |
+| `/metrics` | GET | Prometheus metrics endpoint |
+
+### Product Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/products` | GET | Retrieve all products with filtering and pagination |
+| `/api/products/:id` | GET | Get a single product by ID |
+| `/api/products` | POST | Create a new product |
+| `/api/products/:id` | PUT | Update an existing product |
+| `/api/products/:id/stock` | PATCH | Update product stock levels |
+| `/api/products/:id` | DELETE | Delete a product |
+| `/api/stats` | GET | Get inventory statistics |
+
+### Query Parameters (GET /api/products)
+
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `category` | string | Filter by category | `?category=Electronics` |
+| `minPrice` | number | Minimum price filter | `?minPrice=50` |
+| `maxPrice` | number | Maximum price filter | `?maxPrice=1000` |
+| `inStock` | boolean | Filter in-stock items | `?inStock=true` |
+| `page` | number | Page number (default: 1) | `?page=2` |
+| `limit` | number | Items per page (default: 10) | `?limit=20` |
+
+### Request/Response Examples
+
+#### Create a Product
+
+**Request:**
+```bash
+curl -X POST http://localhost:3000/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Wireless Keyboard",
+    "category": "Electronics",
+    "price": 89.99,
+    "stock": 75,
+    "sku": "ELEC-KEY-004",
+    "description": "Bluetooth mechanical keyboard with RGB lighting"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 4,
+    "name": "Wireless Keyboard",
+    "category": "Electronics",
+    "price": 89.99,
+    "stock": 75,
+    "sku": "ELEC-KEY-004",
+    "description": "Bluetooth mechanical keyboard with RGB lighting",
+    "createdAt": "2026-02-07T10:30:00.000Z"
+  },
+  "message": "Product created successfully"
+}
+```
+
+#### Get Products with Filtering
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/products?category=Electronics&minPrice=50&maxPrice=200&page=1&limit=5"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "Laptop Pro 15",
+      "category": "Electronics",
+      "price": 1299.99,
+      "stock": 45,
+      "sku": "ELEC-LAP-001"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 3,
+    "totalItems": 12,
+    "itemsPerPage": 5
+  }
+}
+```
+
+#### Update Stock
+
+**Request:**
+```bash
+curl -X PATCH http://localhost:3000/api/products/1/stock \
+  -H "Content-Type: application/json" \
+  -d '{
+    "quantity": 25,
+    "operation": "add"
+  }'
+```
+
+**Stock Operations:**
+- `add`: Increase stock by quantity
+- `subtract`: Decrease stock by quantity
+- `set`: Set stock to exact quantity
+
+#### Get Inventory Statistics
+
+**Request:**
+```bash
+curl http://localhost:3000/api/stats
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalProducts": 150,
+    "totalValue": 125340.50,
+    "totalStock": 5420,
+    "categories": 8,
+    "lowStock": 12,
+    "outOfStock": 3,
+    "categoryBreakdown": {
+      "Electronics": 45,
+      "Accessories": 67,
+      "Furniture": 38
+    }
+  }
+}
+```
+
+---
+
+## Testing
+
+### Test Suite Overview
+
+The project includes comprehensive testing with **85%+ code coverage**:
+
+- **Unit Tests**: Test individual functions and endpoints
+- **Integration Tests**: Test complete API workflows
+- **Coverage Reports**: HTML and JUnit XML formats
+
+### Running Tests
+
+**All Tests with Coverage:**
+```bash
+npm test
+```
+
+**Watch Mode (for development):**
+```bash
+npm run test:watch
+```
+
+**Integration Tests Only:**
+```bash
+npm run test:integration
+```
+
+**View Coverage Report:**
+```bash
+npm test
+# Open coverage/lcov-report/index.html in browser
+```
+
+### Test Structure
+
+```javascript
+// Unit Tests (app.test.js)
+- Health Check Endpoints
+- Product CRUD Operations
+- Filtering and Pagination
+- Input Validation
+- Error Handling
+- Statistics Calculation
+
+// Integration Tests (integration.test.js)
+- Complete Product Lifecycle
+- Stock Management Workflow
+- Multi-step Operations
+- Data Consistency
+```
+
+### Coverage Requirements
+
+The project enforces minimum coverage thresholds:
+- **Branches**: 70%
+- **Functions**: 70%
+- **Lines**: 70%
+- **Statements**: 70%
+
+---
+
+## CI/CD Pipeline
+
+### Jenkins Pipeline Overview
+
+The project includes a complete 7-stage Jenkins pipeline that automates the entire software delivery process from code commit to production deployment.
+
+### Pipeline Stages
+
+#### Stage 1: Build
+- Install npm dependencies
+- Create build artifacts
+- Build Docker images with multi-stage builds
+- Tag images with build number and commit hash
+
+#### Stage 2: Test
+- Execute Jest test suite
+- Generate JUnit XML reports
+- Create HTML coverage reports
+- Archive test artifacts
+- Enforce coverage thresholds
+
+#### Stage 3: Code Quality Analysis
+- Run ESLint static analysis
+- Execute SonarQube scan (if configured)
+- Check quality gates
+- Generate code metrics reports
+
+#### Stage 4: Security Scan
+- Perform npm audit for dependency vulnerabilities
+- Scan Docker images with Trivy
+- Generate comprehensive security reports
+- Categorize findings by severity (Critical, High, Medium, Low)
+
+#### Stage 5: Deploy to Staging
+- Deploy containers using Docker Compose
+- Run automated smoke tests
+- Verify health checks
+- Test API endpoints
+
+#### Stage 6: Release to Production
+- Tag release versions
+- Push images to Docker registry
+- Deploy to production environment
+- Execute health checks
+- Verify API functionality
+
+#### Stage 7: Monitoring & Alerting
+- Collect Prometheus metrics
+- Configure alert rules
+- Generate monitoring dashboards
+- Set up notification channels
+
+### Setting Up Jenkins
+
+**Prerequisites:**
+```bash
+- Jenkins 2.400+
+- Docker Pipeline Plugin
+- HTML Publisher Plugin
+- JUnit Plugin
+```
+
+**Configuration Steps:**
+
+1. **Create New Pipeline Job:**
+   - New Item → Pipeline
+   - Name: `inventory-management-api`
+   - Pipeline script from SCM
+
+2. **Configure Repository:**
+   - Repository URL: `https://github.com/yourusername/inventory-management-api.git`
+   - Branch: `*/main`
+   - Script Path: `Jenkinsfile`
+
+3. **Configure Credentials (Optional):**
+   - Docker Hub credentials: `dockerhub-credentials`
+   - Email/Slack webhook for notifications
+   - SonarQube token (if using SonarQube)
+
+4. **Run Pipeline:**
+   - Click "Build Now"
+   - Monitor console output
+   - View test reports and coverage
+
+### Pipeline Artifacts
+
+Each build generates:
+- Test reports (JUnit XML)
+- Coverage reports (HTML)
+- Security findings (Markdown)
+- Docker images
+- Build logs
+
+---
+
+## Monitoring & Observability
+
+### Prometheus Metrics
+
+The API exposes comprehensive metrics at `/metrics`:
+
+**Application Metrics:**
+- `http_requests_total`: Total HTTP requests by method, route, and status
+- `http_request_duration_seconds`: Request duration histogram
+- `api_products_total`: Total number of products in inventory
+- `api_stock_operations_total`: Stock operation counter
+
+**Node.js Metrics:**
+- `process_cpu_user_seconds_total`: Process CPU usage
+- `process_resident_memory_bytes`: Memory consumption
+- `nodejs_eventloop_lag_seconds`: Event loop lag
+- `nodejs_heap_size_total_bytes`: Heap memory metrics
+
+### Prometheus Configuration
+
+The included `prometheus.yml` configures:
+- Scraping the API every 10 seconds
+- Retention of metrics for analysis
+- Service discovery configuration
+
+**Access Prometheus:**
+```
+http://localhost:9090
+```
+
+**Sample Queries:**
+```promql
+# Request rate over 5 minutes
+rate(http_requests_total[5m])
+
+# Average response time
+rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])
+
+# Error rate percentage
+sum(rate(http_requests_total{status_code=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100
+```
+
+### Grafana Dashboards
+
+Production deployment includes Grafana for visualization:
+
+**Access Grafana:**
+```
+http://localhost:3001
+Default credentials: admin / admin123
+```
+
+**Available Dashboards:**
+- API Performance Overview
+- Request Rate and Latency
+- Error Tracking
+- Resource Utilization
+- Business Metrics (inventory levels, operations)
+
+---
+
+## Security
+
+### Security Features
+
+#### 1. Application Security
+- **Helmet.js**: Sets 11 security-related HTTP headers
+- **CORS**: Configurable cross-origin resource sharing
+- **Rate Limiting**: 100 requests per 15 minutes per IP
+- **Input Validation**: All inputs validated with express-validator
+- **Sanitization**: XSS and SQL injection prevention
+
+#### 2. Dependency Security
+- **npm audit**: Automated vulnerability scanning
+- **Dependency updates**: Regular updates via Dependabot
+- **Lock file**: package-lock.json for deterministic builds
+
+#### 3. Container Security
+- **Trivy scanning**: Automated image vulnerability detection
+- **Non-root user**: Containers run as non-privileged user (node)
+- **Multi-stage builds**: Minimal production images
+- **No secrets in images**: Environment-based configuration
+
+#### 4. Network Security
+- **Internal networks**: Docker network isolation
+- **Exposed ports**: Only necessary ports exposed
+- **TLS/SSL ready**: HTTPS configuration support
+
+### Security Scanning
+
+**Manual Security Audit:**
+```bash
+npm run security:check
+```
+
+**Docker Image Scan:**
+```bash
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  aquasec/trivy image inventory-management-api:latest
+```
+
+### Security Reports
+
+The Jenkins pipeline generates comprehensive security reports including:
+- Vulnerability counts by severity
+- Affected packages and versions
+- Available fixes and remediation steps
+- CVE references and details
+
+---
+
+## Deployment
+
 ### Docker Deployment
 
+#### Development Environment
+
 ```bash
-# Build and run with Docker Compose
+# Start services
 docker-compose up -d
 
 # View logs
-docker-compose logs -f
+docker-compose logs -f app
+
+# Restart services
+docker-compose restart
 
 # Stop services
 docker-compose down
 ```
 
-## 🧪 Testing
+**Services:**
+- `app`: Inventory API on port 3000
+- `prometheus`: Metrics collection on port 9090
+
+#### Production Environment
 
 ```bash
-# Run all tests
-npm test
+# Deploy production stack
+docker-compose -f docker-compose.prod.yml up -d
 
-# Run tests in watch mode
-npm run test:watch
+# View service status
+docker-compose -f docker-compose.prod.yml ps
 
-# Run integration tests
-npm run test:integration
-
-# View coverage report
-npm test && open coverage/lcov-report/index.html
+# Scale API instances
+docker-compose -f docker-compose.prod.yml up -d --scale inventory-api=3
 ```
 
-## 🔍 Code Quality
+**Production Services:**
+- `inventory-api`: API application
+- `prometheus`: Monitoring backend
+- `grafana`: Visualization dashboard
+
+### Manual Deployment
 
 ```bash
-# Run ESLint
-npm run lint
+# Build production image
+docker build -t inventory-management-api:latest .
 
-# Fix auto-fixable issues
-npm run lint:fix
+# Run container
+docker run -d \
+  --name inventory-api \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  inventory-management-api:latest
 
-# Security audit
-npm run security:check
+# Health check
+curl http://localhost:3000/health
 ```
 
-## 📊 API Endpoints
+### Kubernetes Deployment (Advanced)
 
-### Health & Monitoring
+Example Kubernetes manifests:
 
-- `GET /health` - Health check endpoint
-- `GET /ready` - Readiness check endpoint
-- `GET /metrics` - Prometheus metrics
-
-### Products
-
-- `GET /api/products` - Get all products (with filtering & pagination)
-  - Query params: `category`, `minPrice`, `maxPrice`, `inStock`, `page`, `limit`
-- `GET /api/products/:id` - Get single product
-- `POST /api/products` - Create new product
-- `PUT /api/products/:id` - Update product
-- `PATCH /api/products/:id/stock` - Update stock level
-- `DELETE /api/products/:id` - Delete product
-
-### Statistics
-
-- `GET /api/stats` - Get inventory statistics
-
-## 📝 API Examples
-
-### Create a Product
-
-```bash
-curl -X POST http://localhost:3000/api/products \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Gaming Mouse",
-    "category": "Electronics",
-    "price": 79.99,
-    "stock": 50,
-    "sku": "ELEC-MOU-004",
-    "description": "RGB gaming mouse with 16000 DPI"
-  }'
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: inventory-api
+  template:
+    metadata:
+      labels:
+        app: inventory-api
+    spec:
+      containers:
+      - name: api
+        image: inventory-management-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
 ```
-
-### Get Products with Filtering
-
-```bash
-# Filter by category and price range
-curl "http://localhost:3000/api/products?category=Electronics&minPrice=50&maxPrice=1500&page=1&limit=10"
-
-# Get only in-stock products
-curl "http://localhost:3000/api/products?inStock=true"
-```
-
-### Update Stock
-
-```bash
-curl -X PATCH http://localhost:3000/api/products/1/stock \
-  -H "Content-Type: application/json" \
-  -d '{
-    "quantity": 10,
-    "operation": "add"
-  }'
-```
-
-## 🔒 Security Features
-
-1. **Helmet.js** - Sets security-related HTTP headers
-2. **CORS** - Configurable cross-origin resource sharing
-3. **Rate Limiting** - 100 requests per 15 minutes per IP
-4. **Input Validation** - Express-validator for all inputs
-5. **Dependency Scanning** - Regular npm audit checks
-6. **Container Scanning** - Trivy for Docker image vulnerabilities
-7. **Non-root User** - Docker containers run as non-root user
-
-## 📈 Monitoring
-
-The application exposes Prometheus metrics at `/metrics`:
-
-- HTTP request duration and count
-- Process CPU and memory usage
-- Node.js event loop lag
-- Custom business metrics
-
-### Prometheus Setup
-
-```bash
-# Prometheus is included in docker-compose
-# Access at: http://localhost:9090
-
-# Sample queries:
-# - Rate of requests: rate(http_requests_total[5m])
-# - Average response time: rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])
-```
-
-## 🚀 Jenkins Pipeline
-
-The project includes a comprehensive Jenkins pipeline with 8 stages:
-
-### Pipeline Stages
-
-1. **Checkout & Setup** - Clone repository and prepare environment
-2. **Build** - Install dependencies and create build artifacts
-3. **Test** - Run unit tests with coverage reporting
-4. **Code Quality Analysis** - ESLint and SonarQube analysis
-5. **Security Scan** - npm audit and Trivy container scanning
-6. **Deploy to Staging** - Docker deployment with smoke tests
-7. **Release to Production** - Production deployment with tagging
-8. **Monitoring & Alerting** - Configure monitoring and alerts
-
-### Setting Up Jenkins
-
-1. **Install Jenkins** and required plugins:
-   - Pipeline
-   - Docker Pipeline
-   - SonarQube Scanner
-   - HTML Publisher
-   - JUnit
-
-2. **Configure Jenkins**:
-   ```bash
-   # Create new Pipeline job
-   # Point to your repository
-   # Pipeline script from SCM -> Git
-   # Script Path: Jenkinsfile
-   ```
-
-3. **Configure SonarQube** (optional):
-   - Install SonarQube server
-   - Configure SonarQube server in Jenkins
-   - Add SonarQube scanner tool
-
-4. **Run Pipeline**:
-   - Click "Build Now"
-   - Monitor console output
-   - View test reports and coverage
-
-### Pipeline Features
-
-- ✅ Automated testing with coverage reports
-- ✅ Code quality gates with SonarQube
-- ✅ Security vulnerability scanning
-- ✅ Docker image building and tagging
-- ✅ Automated deployment to staging
-- ✅ Production release management
-- ✅ Health checks and smoke tests
-- ✅ Prometheus metrics integration
-- ✅ Build artifacts archiving
-- ✅ Email/Slack notifications (configurable)
-
-## 📁 Project Structure
-
-```
-inventory-management-api/
-├── app.js                      # Main application file
-├── app.test.js                 # Comprehensive test suite
-├── package.json                # Dependencies and scripts
-├── jest.config.js              # Jest configuration
-├── .eslintrc.js               # ESLint configuration
-├── Dockerfile                  # Docker image definition
-├── docker-compose.yml          # Docker Compose configuration
-├── Jenkinsfile                 # Complete CI/CD pipeline
-├── sonar-project.properties    # SonarQube configuration
-├── prometheus.yml              # Prometheus configuration
-├── .gitignore                 # Git ignore rules
-├── .dockerignore              # Docker ignore rules
-└── README.md                   # This file
-```
-
-## 🏆 High Distinction Features
-
-This project achieves High Distinction (95-100%) by implementing:
-
-### ✅ All 7 Required Pipeline Stages (Plus Monitoring)
-1. Build with Docker artifacts
-2. Comprehensive automated testing
-3. Code quality analysis with ESLint + SonarQube
-4. Security scanning with npm audit + Trivy
-5. Automated deployment to staging
-6. Production release management
-7. Monitoring with Prometheus metrics
-8. **BONUS**: Alerting and health checks
-
-### ✅ Production-Grade Application
-- Complex, modular architecture
-- Multiple testable features (CRUD, filtering, validation)
-- RESTful API with proper HTTP methods
-- Error handling and validation
-- Security best practices
-
-### ✅ Advanced Testing Strategy
-- Unit tests with 85%+ coverage
-- Integration tests for API endpoints
-- Health check validation
-- Smoke tests in deployment stage
-
-### ✅ Professional Documentation
-- Comprehensive README
-- Inline code comments
-- API documentation
-- Setup instructions
-- Architecture explanations
-
-### ✅ DevOps Best Practices
-- Infrastructure as Code (Docker, docker-compose)
-- Automated everything (build, test, deploy)
-- Monitoring and observability
-- Security scanning
-- Quality gates
-- Version tagging
-- Graceful shutdown handling
-
-## 🎯 Jenkins Pipeline Highlights
-
-### Build Stage
-- ✅ Automated dependency installation
-- ✅ Build artifact creation (.tar.gz)
-- ✅ Docker image building with multi-stage builds
-- ✅ Image tagging and versioning
-
-### Test Stage
-- ✅ Jest test execution with coverage
-- ✅ JUnit XML report generation
-- ✅ HTML coverage reports
-- ✅ Coverage threshold enforcement (70%)
-
-### Code Quality Stage
-- ✅ ESLint static analysis
-- ✅ SonarQube integration
-- ✅ Quality gate checks
-- ✅ Code metrics reporting
-
-### Security Stage
-- ✅ npm audit for dependency vulnerabilities
-- ✅ Trivy Docker image scanning
-- ✅ Severity-based reporting
-- ✅ Automated vulnerability detection
-
-### Deploy Stage
-- ✅ Docker Compose deployment
-- ✅ Health check verification
-- ✅ Automated smoke tests
-- ✅ Rollback capability
-
-### Release Stage
-- ✅ Production image tagging
-- ✅ Version control integration
-- ✅ Release automation
-- ✅ Manual approval option (configurable)
-
-### Monitoring Stage
-- ✅ Prometheus metrics collection
-- ✅ Custom application metrics
-- ✅ Dashboard integration
-- ✅ Alert rule configuration
-
-## 🔧 Environment Variables
-
-```bash
-# Application
-PORT=3000
-NODE_ENV=production
-
-# Docker Registry (for production)
-DOCKER_REGISTRY=your-registry.example.com
-
-# Monitoring
-PROMETHEUS_URL=http://prometheus:9090
-
-# Notifications (optional)
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
-EMAIL_RECIPIENTS=team@example.com
-```
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👥 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📞 Support
-
-For questions or issues, please open an issue on GitHub or contact the development team.
-
-## 🙏 Acknowledgments
-
-- Built for SIT223/SIT753 Professional Practice in IT
-- Demonstrates enterprise-grade DevOps practices
-- Designed to achieve High Distinction (95-100%)
 
 ---
 
-**Built with ❤️ for DevOps Excellence**
+## Configuration
+
+### Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `NODE_ENV` | Environment (development/production) | development | No |
+| `PORT` | Server port | 3000 | No |
+| `DOCKER_REGISTRY` | Docker registry URL | - | For registry push |
+| `EMAIL_RECIPIENTS` | Email notification recipients | - | For email alerts |
+| `SLACK_WEBHOOK_URL` | Slack webhook for notifications | - | For Slack alerts |
+
+### Application Configuration
+
+**Rate Limiting:**
+```javascript
+// Modify in app.js
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // requests per windowMs
+});
+```
+
+**CORS Configuration:**
+```javascript
+// Modify in app.js
+app.use(cors({
+  origin: 'https://your-frontend.com',
+  credentials: true
+}));
+```
+
+### Docker Configuration
+
+**Build Arguments:**
+```bash
+docker build \
+  --build-arg NODE_VERSION=18 \
+  --build-arg APP_PORT=3000 \
+  -t inventory-management-api:latest .
+```
+
+**Environment File (.env):**
+```env
+NODE_ENV=production
+PORT=3000
+LOG_LEVEL=info
+```
+
+---
+
+## Code Quality
+
+### ESLint Configuration
+
+The project uses Airbnb JavaScript Style Guide with custom rules:
+
+**Run Linter:**
+```bash
+npm run lint
+```
+
+**Auto-fix Issues:**
+```bash
+npm run lint:fix
+```
+
+**Key Rules:**
+- Maximum line length: 120 characters
+- No console statements in production
+- Consistent code formatting
+- Import order enforcement
+
+### Git Hooks (Optional)
+
+Install pre-commit hooks to enforce quality:
+
+```bash
+npm install -D husky lint-staged
+
+# Add to package.json
+{
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": ["eslint --fix", "git add"]
+  }
+}
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**Port Already in Use:**
+```bash
+# Find process using port 3000
+lsof -i :3000
+
+# Kill the process
+kill -9 <PID>
+
+# Or change port
+PORT=3001 npm start
+```
+
+**Docker Build Fails:**
+```bash
+# Clear Docker cache
+docker system prune -a
+
+# Rebuild without cache
+docker-compose build --no-cache
+```
+
+**Tests Failing:**
+```bash
+# Clear Jest cache
+npx jest --clearCache
+
+# Run tests with verbose output
+npm test -- --verbose
+```
+
+**Health Check Failing:**
+```bash
+# Check application logs
+docker-compose logs app
+
+# Verify container is running
+docker-compose ps
+
+# Test health endpoint manually
+curl http://localhost:3000/health
+```
+
+### Debugging
+
+**Enable Debug Logs:**
+```bash
+DEBUG=* npm start
+```
+
+**Docker Logs:**
+```bash
+# Follow logs in real-time
+docker-compose logs -f
+
+# Last 100 lines
+docker-compose logs --tail=100
+```
+
+---
+
+## Performance Considerations
+
+### Optimization Tips
+
+1. **Use Production Mode:**
+   ```bash
+   NODE_ENV=production npm start
+   ```
+
+2. **Enable Clustering:**
+   ```javascript
+   const cluster = require('cluster');
+   const numCPUs = require('os').cpus().length;
+   
+   if (cluster.isMaster) {
+     for (let i = 0; i < numCPUs; i++) {
+       cluster.fork();
+     }
+   } else {
+     // Start server
+   }
+   ```
+
+3. **Add Caching:**
+   - Use Redis for frequently accessed data
+   - Implement HTTP caching headers
+   - Cache Prometheus metrics
+
+4. **Database Connection Pooling:**
+   - When adding a database, use connection pooling
+   - Monitor connection utilization
+
+### Load Testing
+
+```bash
+# Install Apache Bench
+brew install ab  # macOS
+apt-get install apache2-utils  # Ubuntu
+
+# Run load test
+ab -n 10000 -c 100 http://localhost:3000/api/products
+```
+
+---
+
+## Future Enhancements
+
+### Planned Features
+
+- [ ] Database integration (PostgreSQL/MongoDB)
+- [ ] User authentication and authorization (JWT)
+- [ ] Real-time updates with WebSockets
+- [ ] Search functionality with Elasticsearch
+- [ ] Caching layer with Redis
+- [ ] API rate limiting per user
+- [ ] Swagger/OpenAPI documentation
+- [ ] GraphQL endpoint
+- [ ] Multi-tenancy support
+- [ ] Audit logging
+
+### Infrastructure Improvements
+
+- [ ] Kubernetes deployment templates
+- [ ] Blue-green deployment strategy
+- [ ] Canary releases
+- [ ] Auto-scaling configuration
+- [ ] Backup and disaster recovery
+- [ ] Multi-region deployment
+- [ ] CDN integration
+
+---
+
+## Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+### Development Workflow
+
+1. **Fork the repository**
+2. **Create a feature branch:**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Make your changes**
+4. **Run tests:**
+   ```bash
+   npm test
+   npm run lint
+   ```
+5. **Commit with meaningful messages:**
+   ```bash
+   git commit -m "feat: add user authentication"
+   ```
+6. **Push to your fork:**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+7. **Open a Pull Request**
+
+February 2026  
+**Version:** 1.0.0  
+**Status:** Production Ready ✅
