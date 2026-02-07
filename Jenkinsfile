@@ -466,9 +466,6 @@ pipeline {
         }
         
         stage('7. Release to Production') {
-            when {
-                branch 'main'
-            }
             
             steps {
                 script {
