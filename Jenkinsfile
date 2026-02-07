@@ -305,7 +305,7 @@ pipeline {
                                     </style>
                                 </head>
                                 <body>
-                                    <div class="${env.NPM_CRITICAL_VULNS.toInteger() > 0 || env.NPM_HIGH_VULNS.toInteger() > 0 ? 'warning' : 'header'}">
+                                    <div class="${((env.NPM_CRITICAL_VULNS ?: "0") as Integer) > 0 || ((env.NPM_HIGH_VULNS ?: "0") as Integer) > 0 ? 'warning' : 'header'}">
                                         <h1>🔒 Security Scan Report</h1>
                                         <p>Build #${env.BUILD_NUMBER} - ${new Date().format('yyyy-MM-dd HH:mm:ss')}</p>
                                     </div>
@@ -324,16 +324,16 @@ pipeline {
                                                 <tr>
                                                     <td><strong>NPM Dependencies</strong></td>
                                                     <td>${env.NPM_TOTAL_VULNS}</td>
-                                                    <td class="${env.NPM_CRITICAL_VULNS.toInteger() > 0 ? 'critical' : ''}">${env.NPM_CRITICAL_VULNS}</td>
-                                                    <td class="${env.NPM_HIGH_VULNS.toInteger() > 0 ? 'high' : ''}">${env.NPM_HIGH_VULNS}</td>
-                                                    <td class="${env.NPM_TOTAL_VULNS.toInteger() == 0 ? 'passed' : 'high'}">${env.NPM_TOTAL_VULNS.toInteger() == 0 ? '✅ PASS' : '⚠️ REVIEW'}</td>
+                                                    <td class="${((env.NPM_CRITICAL_VULNS ?: "0") as Integer) > 0 ? 'critical' : ''}">${env.NPM_CRITICAL_VULNS}</td>
+                                                    <td class="${((env.NPM_HIGH_VULNS ?: "0") as Integer) > 0 ? 'high' : ''}">${env.NPM_HIGH_VULNS}</td>
+                                                    <td class="${((env.NPM_TOTAL_VULNS ?: "0") as Integer) == 0 ? 'passed' : 'high'}">${((env.NPM_TOTAL_VULNS ?: "0") as Integer) == 0 ? '✅ PASS' : '⚠️ REVIEW'}</td>
                                                 </tr>
                                                 <tr>
                                                     <td><strong>Docker Image</strong></td>
                                                     <td>${env.TRIVY_TOTAL_VULNS}</td>
-                                                    <td class="${env.TRIVY_CRITICAL_VULNS != 'N/A' && env.TRIVY_CRITICAL_VULNS.toInteger() > 0 ? 'critical' : ''}">${env.TRIVY_CRITICAL_VULNS}</td>
-                                                    <td class="${env.TRIVY_HIGH_VULNS != 'N/A' && env.TRIVY_HIGH_VULNS.toInteger() > 0 ? 'high' : ''}">${env.TRIVY_HIGH_VULNS}</td>
-                                                    <td>${env.TRIVY_TOTAL_VULNS == 'N/A' ? 'N/A' : (env.TRIVY_TOTAL_VULNS.toInteger() == 0 ? '✅ PASS' : '⚠️ REVIEW')}</td>
+                                                    <td class="${env.TRIVY_CRITICAL_VULNS != 'N/A' && ((env.TRIVY_CRITICAL_VULNS ?: "0") as Integer) > 0 ? 'critical' : ''}">${env.TRIVY_CRITICAL_VULNS}</td>
+                                                    <td class="${env.TRIVY_HIGH_VULNS != 'N/A' && ((env.TRIVY_HIGH_VULNS ?: "0") as Integer) > 0 ? 'high' : ''}">${env.TRIVY_HIGH_VULNS}</td>
+                                                    <td>${env.TRIVY_TOTAL_VULNS == 'N/A' ? 'N/A' : (((env.TRIVY_TOTAL_VULNS ?: "0") as Integer) == 0 ? '✅ PASS' : '⚠️ REVIEW')}</td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -349,7 +349,7 @@ pipeline {
                                         </ul>
                                         
                                         <h2>🔍 Next Steps</h2>
-                                        ${env.NPM_TOTAL_VULNS.toInteger() > 0 || (env.TRIVY_TOTAL_VULNS != 'N/A' && env.TRIVY_TOTAL_VULNS.toInteger() > 0) ? 
+                                        ${((env.NPM_TOTAL_VULNS ?: "0") as Integer) > 0 || (env.TRIVY_TOTAL_VULNS != 'N/A' && ((env.TRIVY_TOTAL_VULNS ?: "0") as Integer) > 0) ? 
                                             '<p class="high">⚠️ Vulnerabilities were found. Please review the attached report.</p>' : 
                                             '<p class="passed">✅ No vulnerabilities found. Your application is secure!</p>'}
                                         
