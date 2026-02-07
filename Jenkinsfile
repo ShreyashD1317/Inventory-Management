@@ -966,7 +966,6 @@ pipeline {
             sendNotification('WARNING', 'Pipeline Unstable', "Build #${BUILD_NUMBER} completed with warnings")
         }
     }
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS
