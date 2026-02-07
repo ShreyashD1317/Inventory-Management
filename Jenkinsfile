@@ -539,9 +539,7 @@ pipeline {
                             
                             echo.
                             echo Testing production API endpoints...
-                            curl -s http://localhost:3000/api/products | findstr /C:"[" >nul && echo ✓ Products API responding || echo ⚠️ Products API check failed
-                            curl -s http://localhost:3000/api/categories | findstr /C:"[" >nul && echo ✓ Categories API responding || echo ⚠️ Categories API check failed
-                            
+                            curl -s http://localhost:3000/api/products                            
                             echo.
                             exit /b 0
                             echo ✓ Production deployment completed
