@@ -336,15 +336,6 @@ pipeline {
         // - Issues fixed, justified, or documented
         // - Mitigation strategies explained
         // ═══════════════════════════════════════════════════════════
-        stage('4. Security Scan') {
-            steps {
-                script {
-                    echo "=========================================="
-                    echo "STAGE 4: SECURITY ANALYSIS"
-                    echo "NPM Audit + Docker Scan + Documentation"
-                    echo "=========================================="
-                }
-
         // ═══════════════════════════════════════════════════════════
         // STAGE 4: SECURITY (95-100% Requirements) - FIXED VERSION
         // - Proactive security handling
@@ -530,9 +521,7 @@ pipeline {
                 }
             }
         }
-                }
-            }
-        }
+
 
         // ═══════════════════════════════════════════════════════════
         // STAGE 5: DEPLOY TO STAGING (95-100% Requirements)
@@ -966,6 +955,7 @@ pipeline {
             sendNotification('WARNING', 'Pipeline Unstable', "Build #${BUILD_NUMBER} completed with warnings")
         }
     }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS
