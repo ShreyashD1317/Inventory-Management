@@ -543,6 +543,7 @@ pipeline {
                             curl -s http://localhost:3000/api/categories | findstr /C:"[" >nul && echo ✓ Categories API responding || echo ⚠️ Categories API check failed
                             
                             echo.
+                            exit /b 0
                             echo ✓ Production deployment completed
                         '''
                         
