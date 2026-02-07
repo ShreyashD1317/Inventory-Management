@@ -5,18 +5,15 @@ pipeline {
         // Application settings
         APP_NAME = 'inventory-management-api'
         DOCKER_IMAGE = "${APP_NAME}:${BUILD_NUMBER}"
-        DOCKER_REGISTRY = 'docker.io/shreyashd69' // Update with your registry
+        DOCKER_REGISTRY = 'docker.io/shreyashd69'
         DOCKER_REGISTRY_CREDENTIAL = 'dockerhub-credentials' // Jenkins credential ID for Docker Hub
         
-        // Deployment environments
-        STAGING_SERVER = 'staging.example.com'
-        PRODUCTION_SERVER = 'production.example.com'
         
         // Tool versions
         NODE_VERSION = '18'
         
         // Notification settings
-        SLACK_CHANNEL = '#devops-alerts'
+        SLACK_CHANNEL = '#jenkins-notifications'
         SLACK_WEBHOOK = credentials('slack-webhook-url') // Jenkins credential for Slack webhook
         EMAIL_RECIPIENTS = 'shreyash2612@gmail.com'
         
