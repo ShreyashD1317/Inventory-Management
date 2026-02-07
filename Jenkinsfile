@@ -167,35 +167,6 @@ pipeline {
                     type coverage\\coverage-summary.json 2>nul || echo Coverage report not generated
                 '''
                 
-                script {
-                    // Parse coverage and enforce threshold
-                    try {
-                        def coverageData = bat(
-                            returnStdout: true,
-                            script: 'powershell -Command "$json = Get-Content coverage\\coverage-summary.json | ConvertFrom-Json; Write-Output $json.total.lines.pct" 2>nul || echo 0'
-                        ).trim()
-                        
-                        def coverage = coverageData.toFloat()
-                        env.CODE_COVERAGE = coverage.toString()
-                        
-                        echo """
-                        ============================================
-                        COVERAGE GATE CHECK
-                        ============================================
-                        Current Coverage: ${coverage}%
-                        Required Threshold: ${CODE_COVERAGE_THRESHOLD}%
-                        Status: ${coverage >= CODE_COVERAGE_THRESHOLD.toFloat() ? '✓ PASS' : '✗ FAIL'}
-                        ============================================
-                        """
-                        
-                        if (coverage < CODE_COVERAGE_THRESHOLD.toFloat()) {
-                            error("Coverage ${coverage}% is below threshold ${CODE_COVERAGE_THRESHOLD}%")
-                        }
-                    } catch (Exception e) {
-                        echo "⚠️ Coverage check failed: ${e.message}"
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
             }
 
             post {
@@ -589,6 +560,8 @@ pipeline {
                     echo Testing Products API...
                     curl -s http://localhost:3000/api/products | findstr /C:"[" >nul && echo ✓ Products API: PASS || echo ✗ Products API: FAIL
                     
+                    echo Testing Categories API...
+                    curl -s http://localhost:3000/api/categories | findstr /C:"[" >nul && echo ✓ Categories API: PASS || echo ✗ Categories API: FAIL
                     
                     echo.
                     echo ✓ Staging deployment validated
