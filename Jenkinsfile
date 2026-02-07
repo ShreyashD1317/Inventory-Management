@@ -30,7 +30,7 @@ pipeline {
     }
     
     stages {
-        stage('1. Checkout & Setup') {
+        stage('Checkout & Setup') {
             steps {
                 script {
                     echo "=========================================="
@@ -53,7 +53,7 @@ pipeline {
             }
         }
         
-        stage('2. Build') {
+        stage('1. Build') {
             steps {
                 script {
                     echo "=========================================="
@@ -108,7 +108,7 @@ pipeline {
             }
         }
         
-        stage('3. Test') {
+        stage('2. Test') {
             steps {
                 script {
                     echo "=========================================="
@@ -154,7 +154,7 @@ pipeline {
             }
         }
         
-        stage('4. Code Quality Analysis') {
+        stage('3. Code Quality Analysis') {
             steps {
                 script {
                     echo "=========================================="
@@ -221,7 +221,7 @@ pipeline {
             }
         }
         
-        stage('5. Security Scan') {
+        stage('4. Security Scan') {
             steps {
                 script {
                     echo "=========================================="
@@ -391,7 +391,7 @@ pipeline {
             }
         }
         
-        stage('6. Deploy to Staging') {
+        stage('5. Deploy to Staging') {
             steps {
                 script {
                     echo "=========================================="
@@ -465,7 +465,7 @@ pipeline {
             }
         }
         
-        stage('7. Release to Production') {
+        stage('6. Release to Production') {
             
             steps {
                 script {
@@ -539,9 +539,8 @@ pipeline {
                             
                             echo.
                             echo Testing production API endpoints...
-                            curl -s http://localhost:3000/api/products                            
+                            curl -s http://localhost:3000/api/products 
                             echo.
-                            exit /b 0
                             echo ✓ Production deployment completed
                         '''
                         
@@ -567,7 +566,7 @@ pipeline {
             }
         }
         
-        stage('8. Monitoring & Alerting') {
+        stage('7. Monitoring & Alerting') {
             steps {
                 script {
                     echo "=========================================="
