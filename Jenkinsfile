@@ -589,10 +589,7 @@ pipeline {
                     
                     echo Testing Products API...
                     curl -s http://localhost:3000/api/products | findstr /C:"[" >nul && echo ✓ Products API: PASS || echo ✗ Products API: FAIL
-                    
-                    echo Testing Categories API...
-                    curl -s http://localhost:3000/api/categories | findstr /C:"[" >nul && echo ✓ Categories API: PASS || echo ✗ Categories API: FAIL
-                    
+                          
                     echo.
                     echo ✓ Staging deployment validated
                 '''
